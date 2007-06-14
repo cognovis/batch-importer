@@ -1,7 +1,7 @@
 
 ad_proc -public batch_importer_scheduler {
 } {
-    this runs every minute
+    this runs every 10 seconds
 } {
     db_foreach batch_importers "
         select 
@@ -67,7 +67,7 @@ ad_proc -public batch_importer_check_directory {
                 AND package_id=:package_id"]>0} {
 	    continue
 	}
-	ns_log Notice "batch-importer: $filename"
+	ns_log Debug "batch-importer: $filename"
 	set output [eval "$p(action)"]
 	db_dml new_import "
             INSERT INTO batch_importer_files
@@ -77,7 +77,7 @@ ad_proc -public batch_importer_check_directory {
         "
 
 	if {[regexp $p(error_regex) $output]} {
-	    ns_log Notice "batch-importer: error match, sending to $p(error_email)"
+	    ns_log Debug "batch-importer: error match, sending to $p(error_email)"
 	    batch_importer_send_error_mail $package_id $p(error_email) $filename $output 
 	}
     }
