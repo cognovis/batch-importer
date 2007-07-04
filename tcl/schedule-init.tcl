@@ -1,2 +1,2 @@
 
-ad_schedule_proc 10 batch_importer_scheduler
+ad_schedule_proc 60 batch_importer_scheduler

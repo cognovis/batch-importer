@@ -24,7 +24,7 @@
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="error_email"  description="email address to send error messages to"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="error_regex"  default=".*error.*" description="if the output of the 'action' matches this regex an email will be send to 'error email'"/>
             <parameter datatype="number"  min_n_values="1"  max_n_values="1"
-        name="polling_interval"  default="60 seconds" description="interval as
+        name="polling_interval"  default="10 minutes" description="interval as
         postgresql interval to check the directory for new files."/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"
         name="regex"  default="[A-Za-z0-9]+" description="glob to match the files to import"/>

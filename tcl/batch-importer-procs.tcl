@@ -1,7 +1,7 @@
 
 ad_proc -public batch_importer_scheduler {
 } {
-    this runs every 10 seconds
+    this runs every 60 seconds
 } {
     db_foreach batch_importers "
         select 
