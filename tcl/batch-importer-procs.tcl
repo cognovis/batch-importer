@@ -11,7 +11,7 @@ ad_proc -public batch_importer_scheduler {
             apm_parameters p ,apm_parameter_values v 
         where p.package_key='batch-importer' 
             and p.parameter_id=v.parameter_id 
-            and parameter_name='polling_interval'
+            and parameter_name='BatchImportPollingInterval'
     " {
 
         set its_time [db_string last_run "
@@ -36,16 +36,19 @@ ad_proc -public batch_importer_scheduler {
                 SET last_run=NOW() 
                 WHERE package_id=:package_id
             "
-	batch_importer_check_directory $package_id
+	    batch_importer_check_directory $package_id
 	}
     }
 }
 
 ad_proc -public batch_importer_check_directory {
+    {-debug_level 2}
     package_id
 } {
     check the directory for new files
 } {
+    set errors {}
+
     db_foreach batch_importer_parameters "
       select 
          p.parameter_name AS name,
@@ -59,16 +62,27 @@ ad_proc -public batch_importer_check_directory {
 	set p($name) $value
     }
 
-    foreach filename [glob -nocomplain -- "$p(directory)/$p(regex)"] {
-	if {[db_string look_for_filename "
+    set regex $p(BatchImportFileRegex)
+    if {$debug_level <= 0} { lappend errors "Note: Checking glob -nocomplain -directory $p(BatchImportIncomingDirectory) -type f $regex" }
+    set files [glob -nocomplain -directory $p(BatchImportIncomingDirectory) -type f $regex]
+    if {$debug_level <= 0} { lappend errors "Note: Found files: $files" }
+
+    foreach filename $files {
+
+	# Check if the filename has already been processed
+	set exists_p [db_string look_for_filename "
             SELECT count(*) 
             FROM batch_importer_files 
             WHERE filename=:filename
-                AND package_id=:package_id"]>0} {
-	    continue
+                AND package_id=:package_id
+	"]
+	if {$exists_p > 0} { 
+	    if {$debug_level <= 0} { lappend errors "Note: File '$filename' has already been processed" }
+	    continue 
 	}
-	ns_log Debug "batch-importer: $filename"
-	set output [eval "$p(action)"]
+
+	if {$debug_level <= 0} { lappend errors "Note: Processing '$filename'" }
+	set output [eval $p(BatchImportAction) $filename]
 	db_dml new_import "
             INSERT INTO batch_importer_files
                 (package_id,filename,import_time,output) 
@@ -76,11 +90,12 @@ ad_proc -public batch_importer_check_directory {
                 (:package_id,:filename,NOW(),:output)
         "
 
-	if {[regexp $p(error_regex) $output]} {
-	    ns_log Debug "batch-importer: error match, sending to $p(error_email)"
-	    batch_importer_send_error_mail $package_id $p(error_email) $filename $output 
+	if {[regexp $p(BatchImportErrorRegex) $output]} {
+	    ns_log Debug "batch-importer: error match, sending to $p(BatchImportErrorEmail)"
+	    batch_importer_send_error_mail $package_id $p(BatchImportErrorEmail) $filename $output 
 	}
     }
+    return $errors
 }
 
 ad_proc -public batch_importer_send_error_mail {
@@ -89,9 +104,10 @@ ad_proc -public batch_importer_send_error_mail {
     filename
     output
 } {
-    if {$to==""} {
-	return
-    }
+    if {$to==""} { return }
+
+    set user_id [ad_get_user_id]
+    set from [db_string from "select im_mail_from_user_id(:user_id)" -default ""]
 
     set msg "
 Batch Importer \#$package_id encountered an error match while importing the

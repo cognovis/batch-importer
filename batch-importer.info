@@ -20,15 +20,12 @@
         <callbacks>
         </callbacks>
         <parameters>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="action"  description="tcl command to execute whenever a file is imported."/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="directory"  description="location of the files to import"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="error_email"  description="email address to send error messages to"/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="error_regex"  default=".*error.*" description="if the output of the 'action' matches this regex an email will be send to 'error email'"/>
-            <parameter datatype="number"  min_n_values="1"  max_n_values="1"
-        name="polling_interval"  default="10 minutes" description="interval as
-        postgresql interval to check the directory for new files."/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"
-        name="regex"  default="[A-Za-z0-9]+" description="glob to match the files to import"/>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="BatchImportPollingInterval" default "10 minutes" description="Interval to check the incoming directory."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="BatchImportAction" default "" description="Tcl command to execute whenever a file is imported. The complete Unix filename is appended to the action TCL"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="BatchImportIncomingDirectory" default "/mnt/projop/filestorage/incoming" description="Directory to check for new files to import"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="BatchImportErrorEmail" default "support@project-open.com" description="Email address for error messages"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="BatchImportErrorRegex"  default=".*error.*" description="Regex to select lines to send to ErrorEmail. Case insensitive match."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1" name="BatchImportFileRegex"  default="[A-Za\-\_z0-9]+" description="Regexp to match the files to import"/>
         </parameters>
 
     </version>
