@@ -18,6 +18,6 @@
 <%= $parameters %>
 </table>
 
-<h2>Last 10 Imports</h2>
+<h2>Last Imports</h2>
 
 <listtemplate name="file_list"></listtemplate>
