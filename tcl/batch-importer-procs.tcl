@@ -90,10 +90,17 @@ ad_proc -public batch_importer_check_directory {
                 (:package_id,:filename,NOW(),:output)
         "
 
-	if {[regexp $p(BatchImportErrorRegex) $output]} {
-	    ns_log Debug "batch-importer: error match, sending to $p(BatchImportErrorEmail)"
-	    batch_importer_send_error_mail $package_id $p(BatchImportErrorEmail) $filename $output 
+	set mail_errors {}
+	foreach line $output {
+	    if {[regexp -nocase $p(BatchImportErrorRegex) $line]} {
+		lappend mail_errors $line
+	    }
 	}
+
+	if {[llength $mail_errors] > 0} {
+	    batch_importer_send_error_mail $package_id $p(BatchImportErrorEmail) $filename [join $mail_errors "\n"]
+	}
+
     }
     return $errors
 }
@@ -105,9 +112,7 @@ ad_proc -public batch_importer_send_error_mail {
     output
 } {
     if {$to==""} { return }
-
-    set user_id [ad_get_user_id]
-    set from [db_string from "select im_mail_from_user_id(:user_id)" -default ""]
+    set from [ad_parameter -package_id [ad_acs_kernel_id] SystemOwner "" [ad_system_owner]]
 
     set msg "
 Batch Importer \#$package_id encountered an error match while importing the
@@ -116,7 +121,7 @@ file \"$filename\". The output was:
 $output
 "
 
-    ns_sendmail $to "error@example.com" "Error while importing:$filename" $msg
+    ns_sendmail $to $from "Error while importing:$filename" $msg
 }
 
     
