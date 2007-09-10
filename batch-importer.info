@@ -25,7 +25,7 @@
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="BatchImportIncomingDirectory" default "/mnt/projop/filestorage/incoming" description="Directory to check for new files to import"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="BatchImportErrorEmail" default "support@project-open.com" description="Email address for error messages"/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="BatchImportErrorRegex"  default=".*error.*" description="Regex to select lines to send to ErrorEmail. Case insensitive match."/>
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1" name="BatchImportFileRegex"  default="[A-Za\-\_z0-9]+" description="Regexp to match the files to import"/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1" name="BatchImportFileRegex"  default="[a-zA-Z0-9\-\_]*" description="Regexp to match the files to import"/>
         </parameters>
 
     </version>
